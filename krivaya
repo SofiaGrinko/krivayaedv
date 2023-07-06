@@ -1,1 +1,118 @@
+import matplotlib.pyplot as plt
+import numpy as np
 
+def curve(d,s1 = -3,s2 = 3):
+    X = np.linspace(s1, s2, 200)
+    Y = np.linspace(s1, s2, 200)
+    X, Y = np.meshgrid(X, Y) # создать координатную сетку.
+    f = lambda x,y:  x**2+y**2-1-d*(x**2)*(y**2)
+    plt.contour(X,Y,f(X,Y),0,colors='pink')
+    plt.title('d={}'.format(d))
+plt.subplots_adjust(hspace=0.5, wspace=0.3)
+plt.subplot(2, 2, 1) 
+curve(-300)
+plt.subplot(2, 2, 2) 
+curve(2)
+plt.subplot(2, 2, 3) 
+curve(-1)
+plt.subplot(2, 2, 4) 
+curve(1)
+def curvetwisted(a,d,s1 = -3,s2 = 3):
+    X = np.linspace(s1, s2, 200)
+    Y = np.linspace(s1, s2, 200)
+    X, Y = np.meshgrid(X, Y) # создать координатную сетку.
+    f = lambda x,y:  a*(x**2)+y**2-1-d*(x**2)*(y**2)
+    plt.contour(X,Y,f(X,Y),0,colors='pink')
+    plt.title('a={},d={}'.format(a,d))
+plt.subplots_adjust(hspace=0.5, wspace=0.3)
+plt.subplot(2, 2, 1) 
+curvetwisted(10,-300)
+plt.subplot(2, 2, 2) 
+curvetwisted(4,2)
+plt.subplot(2, 2, 3) 
+curvetwisted(3,-1)
+plt.subplot(2, 2, 4) 
+curvetwisted(-2,1)
+
+class TwistedEdwardsCurve:
+    def __init__(self, d, p,a=1):
+        if a*d % p == 0 or (d - a) % p == 0:
+            print("Ошибка! Нельзя задать такую кривую")
+        else:
+            self.a = a
+            self.d = d
+            self.p = p
+        
+
+    def __repr__(self):
+        return f"Kривая Эдвардса: {self.a}*x^2 + y^2 = 1 + {self.d}*x^2*y^2" if self.a==1 else  f"Скрученная кривая Эдвардса: {self.a}*x^2 + y^2 = 1 + {self.d}*x^2*y^2"
+    
+    def __eq__(self, other):
+        return self.a == other.a and self.d == other.d and self.p == self.p
+    
+    def InfinityPoint(self):
+        return TwistedEdwardsPoint(0, 1, self)
+    
+    def points2(self):
+        points = []
+        for x in range(self.p):
+            for y in range(self.p):
+                if not ((self.a*pow(x,2,self.p) + pow(y,2,self.p) - 1 - self.d*pow(x*y, 2, self.p)) % self.p):
+                    points.append(TwistedEdwardsPoint(x,y, self))
+        return points
+
+class TwistedEdwardsPoint:
+    def __init__(self, x, y,curve):
+        self.curve = curve
+        self.x = x % self.curve.p
+        self.y = y % self.curve.p
+    
+    def __repr__(self):
+        return f"({self.x}, {self.y})"
+    
+    def __eq__(self, other):
+        return self.curve == other.curve and self.x == other.x and self.y == other.y
+    
+    def __neg__(self):
+        return TwistedEdwardsPoint(-self.x, self.y, self.curve)
+    
+    def __add__(self, P):
+        if self.curve==P.curve:
+            if self == self.curve.InfinityPoint():
+                return P
+            if P == self.curve.InfinityPoint():
+                return self
+            y1 = self.y
+            x1 = self.x
+            y2 = P.y
+            x2 = P.x    
+            d = self.curve.d
+            a = self.curve.a
+            p = self.curve.p
+            if (1 - pow(d*x1*x2*y1*y2 % p, 2, p)) % p == 0:
+                self.curve()
+            x3 = (x1*y2 % p + y1*x2 % p)*inverse(1 + d*x1*x2*y1*y2 % p, p) 
+            y3 = (y1*y2 % p - a*x1*x2 % p)*inverse(1 - d*x1*x2*y1*y2 % p, p) 
+            return TwistedEdwardsPoint(x3,y3, self.curve)
+        else:
+            return f"Точки принадлежат разным кривым"
+
+def inverse(a, m):
+    u, v = ExtendedGCD(a,m)
+    d = u*a + v*m
+    if d > 1:
+        return f"Обратного элемента к {a} в кольце не существует"
+    else:
+        if u < 0:
+            u += m
+        return u
+
+def ExtendedGCD(a, b):
+    m11, m12 = 1, 0
+    m21, m22 = 0, 1
+    while b:
+        q = a // b
+        a, b = b, a % b
+        m11, m12 = m12, m11 - m12*q
+        m21, m22 = m22, m21 - m22*q
+    return (m11, m21)
