@@ -1,1 +1,35 @@
+import matplotlib.pyplot as plt
+import numpy as np
 
+def curve(d,s1 = -3,s2 = 3):
+    X = np.linspace(s1, s2, 200)
+    Y = np.linspace(s1, s2, 200)
+    X, Y = np.meshgrid(X, Y) # создать координатную сетку.
+    f = lambda x,y:  x**2+y**2-1-d*(x**2)*(y**2)
+    plt.contour(X,Y,f(X,Y),0,colors='pink')
+    plt.title('d={}'.format(d))
+plt.subplots_adjust(hspace=0.5, wspace=0.3)
+plt.subplot(2, 2, 1) 
+curve(-300)
+plt.subplot(2, 2, 2) 
+curve(2)
+plt.subplot(2, 2, 3) 
+curve(-1)
+plt.subplot(2, 2, 4) 
+curve(1)
+def curvetwisted(a,d,s1 = -3,s2 = 3):
+    X = np.linspace(s1, s2, 200)
+    Y = np.linspace(s1, s2, 200)
+    X, Y = np.meshgrid(X, Y) # создать координатную сетку.
+    f = lambda x,y:  a*(x**2)+y**2-1-d*(x**2)*(y**2)
+    plt.contour(X,Y,f(X,Y),0,colors='pink')
+    plt.title('a={},d={}'.format(a,d))
+plt.subplots_adjust(hspace=0.5, wspace=0.3)
+plt.subplot(2, 2, 1) 
+curvetwisted(10,-300)
+plt.subplot(2, 2, 2) 
+curvetwisted(4,2)
+plt.subplot(2, 2, 3) 
+curvetwisted(3,-1)
+plt.subplot(2, 2, 4) 
+curvetwisted(-2,1)
